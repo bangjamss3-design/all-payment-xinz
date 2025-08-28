@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Gateway</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #0a0e17;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Video Background */
+        #video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: -1;
+            object-fit: cover;
+            opacity: 0.4;
+        }
+
+        /* Welcome Screen */
+        #welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 1s ease-out;
+        }
+
+        .welcome-content {
+            text-align: center;
+            animation: fadeIn 1.5s ease-in;
+        }
+
+        .welcome-emoji {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+
+        .welcome-text {
+            color: #4a86e8;
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(74, 134, 232, 0.5);
+            margin-bottom: 2rem;
+        }
+
+        .enter-btn {
+            background: transparent;
+            color: #fff;
+            border: 2px solid #4a86e8;
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 30px;
+            letter-spacing: 2px;
+        }
+
+        .enter-btn:hover {
+            background: rgba(74, 134, 232, 0.2);
+            box-shadow: 0 0 15px rgba(74, 134, 232, 0.5);
+        }
+
+        /* Container Utama */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            padding-top: 5rem;
+        }
+
+        /* Header dengan Logo */
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            position: relative;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.5rem;
+            position: relative;
+            display: inline-block;
+            padding: 0 1rem;
+        }
+
+        .title::before, .title::after {
+            content: "✦";
+            color: #4a86e8;
+            margin: 0 10px;
+        }
+
+        .subtitle {
+            color: #cccccc;
+            font-size: 1.2rem;
+            margin-top: 1rem;
+        }
+
+        /* Payment Options */
+        .payment-container {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .payment-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #4a86e8;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .payment-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .payment-option {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .payment-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .payment-option::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #4a86e8, #3a66b6);
+        }
+
+        .option-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .option-icon {
+            font-size: 2rem;
+            margin-right: 1rem;
+            color: #4a86e8;
+        }
+
+        .option-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .option-details {
+            margin-bottom: 1rem;
+        }
+
+        .option-number {
+            font-family: monospace;
+            font-size: 1.1rem;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.5rem;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .copy-btn {
+            background: rgba(74, 134, 232, 0.2);
+            color: #4a86e8;
+            border: none;
+            padding: 0.3rem 0.7rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: rgba(74, 134, 232, 0.4);
+        }
+
+        .qris-code {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .qris-image {
+            max-width: 200px;
+            border-radius: 10px;
+            border: 2px solid #4a86e8;
+            box-shadow: 0 0 10px rgba(74, 134, 232, 0.5);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            color: #cccccc;
+        }
+
+        /* Animasi */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+
+        /* Responsif */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+                padding-top: 4rem;
+            }
+            
+            .welcome-text {
+                font-size: 1.8rem;
+            }
+            
+            .title {
+                font-size: 1.8rem;
+            }
+            
+            .payment-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Video Background -->
+    <video id="video-background" autoplay muted loop>
+        <source src="https://files.catbox.moe/3r9f72.mp4" type="video/mp4">
+    </video>
+
+    <!-- Welcome Screen -->
+    <div id="welcome-screen">
+        <div class="welcome-content">
+            <div class="welcome-emoji">😊</div>
+            <div class="welcome-text">Welcome to Payment Gateway</div>
+            <button class="enter-btn" id="enter-btn">ENTER</button>
+        </div>
+    </div>
+
+    <!-- Konten Utama -->
+    <div class="container" style="display: none;">
+        <div class="header">
+            <h1 class="title">SS BUKTI TRANSFER</h1>
+            <p class="subtitle">Lakukan pembayaran dan kirim bukti transfer</p>
+        </div>
+
+        <div class="payment-container">
+            <h2 class="payment-header">PILIH METODE PEMBAYARAN</h2>
+            
+            <div class="payment-options">
+                <!-- Dana -->
+                <div class="payment-option">
+                    <div class="option-header">
+                        <div class="option-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div class="option-title">DANA</div>
+                    </div>
+                    <div class="option-details">
+                        <p>Atas Nama: <strong>NIZAAM</strong></p>
+                        <div class="option-number">
+                            <span id="dana-number">08386860010</span>
+                            <button class="copy-btn" data-number="08386860010">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GOPAY -->
+                <div class="payment-option">
+                    <div class="option-header">
+                        <div class="option-icon">
+                            <i class="fab fa-google-wallet"></i>
+                        </div>
+                        <div class="option-title">GOPAY</div>
+                    </div>
+                    <div class="option-details">
+                        <p>Atas Nama: <strong>NIZAAM</strong></p>
+                        <div class="option-number">
+                            <span id="gopay-number">081288077760</span>
+                            <button class="copy-btn" data-number="081288077760">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OVO -->
+                <div class="payment-option">
+                    <div class="option-header">
+                        <div class="option-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <div class="option-title">OVO</div>
+                    </div>
+                    <div class="option-details">
+                        <p>Atas Nama: <strong>NIZAAM</strong></p>
+                        <div class="option-number">
+                            <span id="ovo-number">083187711388</span>
+                            <button class="copy-btn" data-number="083187711388">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QRIS -->
+                <div class="payment-option">
+                    <div class="option-header">
+                        <div class="option-icon">
+                            <i class="fas fa-qrcode"></i>
+                        </div>
+                        <div class="option-title">QRIS</div>
+                    </div>
+                    <div class="option-details">
+                        <p>Scan kode QR untuk pembayaran</p>
+                        <div class="qris-code">
+                            <img src="https://files.catbox.moe/n20iu7.jpeg" alt="QR Code" class="qris-image">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2023 Payment Gateway. Pastikan Anda telah mengirimkan bukti transfer.</p>
+            <p>Music: https://files.catbox.moe/6j3zuh.mp3</p>
+        </div>
+    </div>
+
+    <!-- Audio Element -->
+    <audio id="bg-music" loop>
+        <source src="https://files.catbox.moe/6j3zuh.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const welcomeScreen = document.getElementById('welcome-screen');
+            const enterBtn = document.getElementById('enter-btn');
+            const container = document.querySelector('.container');
+            const bgMusic = document.getElementById('bg-music');
+            const copyButtons = document.querySelectorAll('.copy-btn');
+            
+            // Fungsi untuk masuk ke halaman payment
+            enterBtn.addEventListener('click', function() {
+                // Animasi fade out untuk welcome screen
+                welcomeScreen.style.opacity = '0';
+                
+                // Set timeout untuk menyembunyikan welcome screen
+                setTimeout(function() {
+                    welcomeScreen.style.display = 'none';
+                    container.style.display = 'block';
+                    
+                    // Memutar musik
+                    bgMusic.play().catch(error => {
+                        console.log('Autoplay prevented: ', error);
+                        // Fallback - minta interaksi pengguna
+                        enterBtn.textContent = 'Klik untuk putar musik';
+                        enterBtn.addEventListener('click', function() {
+                            bgMusic.play();
+                        }, { once: true });
+                    });
+                }, 1000);
+            });
+            
+            // Fungsi untuk copy nomor
+            copyButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const number = this.getAttribute('data-number');
+                    
+                    // Copy ke clipboard
+                    navigator.clipboard.writeText(number).then(() => {
+                        // Ubah teks button menjadi "Copied!" sementara
+                        const originalHTML = this.innerHTML;
+                        this.innerHTML = '<i class="fas fa-check"></i>';
+                        
+                        setTimeout(() => {
+                            this.innerHTML = originalHTML;
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Gagal menyalin teks: ', err);
+                        // Fallback untuk browser yang tidak mendukung clipboard API
+                        const tempTextArea = document.createElement('textarea');
+                        tempTextArea.value = number;
+                        document.body.appendChild(tempTextArea);
+                        tempTextArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(tempTextArea);
+                        
+                        const originalHTML = this.innerHTML;
+                        this.innerHTML = '<i class="fas fa-check"></i>';
+                        
+                        setTimeout(() => {
+                            this.innerHTML = originalHTML;
+                        }, 2000);
+                    });
+                });
+            });
+            
+            // Memastikan video background diputar dengan benar
+            const video = document.getElementById('video-background');
+            video.play().catch(error => {
+                console.log('Video autoplay prevented: ', error);
+            });
+        });
+    </script>
+</body>
+</html>
